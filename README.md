@@ -71,7 +71,7 @@ Several advanced capabilities—such as sophisticated ad ranking, fraud detectio
 
 ## Project Roadmap
 
-* [*] Phase 0 — Repository & Project Setup
+* [ ] Phase 0 — Repository & Project Setup
 * [ ] Phase 1 — Core Models & Business Logic
 * [ ] Phase 2 — Impression, Click & Billing Engine
 * [ ] Phase 3 — REST API & Ad Serving

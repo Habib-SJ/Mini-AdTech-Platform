@@ -31,7 +31,12 @@ class InsufficientDailyBudgetError(Exception): # finish dayily budget
 class InsufficientTotalBudgetError(Exception): # finish month budget
 	pass
 
-
+def close_campaign_if_exhausted(campaign):
+    daily_used = get_daily_cpc_consumption(campaign)
+    total_used = get_total_cpc_consumption(campaign)
+    if daily_used >= campaign.daily_budget or total_used >= campaign.total_budget:
+        campaign.status = 'stop'
+        campaign.save()
 
   
 def register_click(ad, publisher, ip_address, user_agent, impression=None):
@@ -54,9 +59,11 @@ def register_click(ad, publisher, ip_address, user_agent, impression=None):
         	raise InsufficientTotalBudgetError
 
         click = Click.objects.create(ad = ad, publisher= publisher, ip_address = ip_address, user_agent= user_agent, impression = impression)
+        close_campaign_if_exhausted(campaign)
 
         
         return click
+
         
 
 

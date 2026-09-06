@@ -98,6 +98,20 @@ This repository contains detailed documentation describing the project's archite
 
 The goal is not only to build a working application, but also to document the engineering decisions made throughout the development process.
 
+### ⚙️ Database Configuration
+
+This project uses **PostgreSQL** hosted on **[Neon Database](https://neon.tech/)** with connection pooling enabled for high availability and performance.
+
+To run the project locally:
+
+1. Create a `.env` file in the root directory (based on `.env.example`).
+2. Add your database connection string using the `DATABASE_URL` key:
+```env
+DATABASE_URL=postgresql://<DB_USER>:<DB_PASSWORD>@<HOST>/<DB_NAME>?sslmode=require&options=endpoint%3D<ENDPOINT_ID>
+3.Run migrations:
+python manage.py migrate
+
+
 ---
 
 ## Project Status

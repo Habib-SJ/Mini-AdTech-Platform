@@ -1,8 +1,9 @@
 from django.db.models import Sum
 from django.utils import timezone
 from django.db import transaction
+from datetime import date
 
-from tracking.models import Click
+from tracking.models import Click, Impression
 from campaigns.models import Campaign
 
 
@@ -24,7 +25,7 @@ class CampaignNotActiveError(Exception): #campaign status not active
    
 class CampaignOutOfDateRangeError(Exception): # date not range
 	pass
-   
+   	
 class InsufficientDailyBudgetError(Exception): # finish dayily budget
 	pass
   
@@ -63,6 +64,44 @@ def register_click(ad, publisher, ip_address, user_agent, impression=None):
 
         
         return click
+
+def calculate_ctr(campaign):
+    impression_count = Impression.objects.filter(ad__campaign = campaign).count()
+    click_count = Click.objects.filter(ad__campaign = campaign).count()
+
+    if impression_count == 0 or not impression_count:
+        return None
+    ctr = (click_count / impression_count) * 100
+
+    return round (ctr,2)
+
+
+def get_campaign_report(campaign, start_date, end_date):
+    impressions_count = Impression.objects.filter(ad__campaign = campaign, created_at__date__range = [start_date, end_date]).count()
+  
+    clicks_count     = Click.objects.filter(ad__campaign = campaign, created_at__date__range = [start_date, end_date]).count()
+
+    if impressions_count == 0:
+        total_ctr = None
+    else:
+        total_ctr = round(((clicks_count / impressions_count) * 100), 2)
+    
+    cpcs = Click.objects.filter(ad__campaign = campaign, created_at__date__range = [start_date, end_date]).aggregate(total_cpcs=Sum('ad__cpc'))
+
+    total_Statistics = {
+    'start_date' : start_date,
+    'end_date'   : end_date,
+    'impressions': impressions_count,
+    'clicks'     : clicks_count,     
+    'cost'       : round(float(cpcs.get('total_cpcs', 0) or 0), 2), 
+    'ctr'        : round(total_ctr, 4) if total_ctr is not None else None
+    }
+
+    return total_Statistics
+
+
+
+
 
         
 

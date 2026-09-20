@@ -1,4 +1,4 @@
-from django.db.models import Sum
+from django.db.models import Sum, Count, F, ExpressionWrapper, FloatField, Case, When, Value
 from django.utils import timezone
 from django.db import transaction
 from datetime import date
@@ -99,6 +99,29 @@ def get_campaign_report(campaign, start_date, end_date):
 
     return total_Statistics
 
+
+
+
+def get_top_campaigns(limit=10, order_by = 'clicks'):
+    qs = Campaign.objects.annotate(
+    click_count=Count('ad__click'),
+    impression_count=Count('ad__impression'),
+    ).annotate(
+    ctr=Case(
+        When(impression_count = 0, then=Value(0.0)),
+        default = 
+        ExpressionWrapper(
+        F('click_count') * 100.0 / F('impression_count'),
+        output_field=FloatField()
+    ),
+        output_field = FloatField()
+    ))
+    if order_by == 'ctr':
+        qs = qs.order_by('-ctr', '-impression_count')
+    else:
+        qs = qs.order_by('-click_count')
+
+    return qs[:limit]
 
 
 

@@ -160,6 +160,7 @@ secret_key.txt
 media/
 static_root/
 staticfiles/
+/media/
 
 # Django migrations (optional - uncomment if you want to exclude migrations)
 # */migrations/

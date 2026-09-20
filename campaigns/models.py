@@ -30,7 +30,7 @@ class Campaign(models.Model):
 class Ad(models.Model):
 	campaign = models.ForeignKey(Campaign, on_delete= models.CASCADE)
 	title = models.CharField(max_length=100)
-	image = models.ImageField()
+	image = models.ImageField(upload_to='ads/')
 	destination_url = models.URLField(max_length=500)
 	cpc = models.DecimalField(max_digits=12, decimal_places=2)
 	is_active = models.BooleanField(default=True)

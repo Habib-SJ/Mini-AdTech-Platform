@@ -6,14 +6,17 @@ from django.contrib.auth import get_user_model
 
 from django.contrib.auth.models import User
 from accounts.models import Advertiser, Publisher
-from tracking.models import Click
+from tracking.models import Click, Impression
 from campaigns.models import Campaign, Ad
 from campaigns.services import (
     register_click, AdNotActiveError, CampaignNotActiveError,
     CampaignOutOfDateRangeError, InsufficientDailyBudgetError,
-    InsufficientTotalBudgetError,
+    InsufficientTotalBudgetError, calculate_ctr, get_campaign_report,
+    get_top_campaigns
 )
 
+
+#################################################################
 User = get_user_model()
 
 
@@ -243,7 +246,9 @@ class RegisterClickTests(TestCase):
                 user_agent="test-agent",
                 impression= None)
 
-
+#################################################################
+            #campaign closes when budget exhausted
+#################################################################
     def test_campaign_closes_when_budget_exhausted(self):
         now = timezone.now()
         campaign = Campaign.objects.create(
@@ -278,4 +283,211 @@ class RegisterClickTests(TestCase):
         campaign.refresh_from_db()
 
         self.assertEqual(campaign.status, "stop")
+
+#################################################################
+#################################################################
+
+class BaseAdTechTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+       
+        cls.adv_user = User.objects.create_user(
+            username="adv_user",
+            email="advertiser@example.com",
+            password="securepassword123",
+            first_name="Ali",
+            last_name="Ahmadi",
+        )
+        cls.pub_user = User.objects.create_user(
+            username = "pub_user",
+            email = "publisher@example.com",
+            password = "securepassword123",
+            first_name = "sara",
+            last_name = "Rezaee"
+
+            )
+        cls.advertiser = Advertiser.objects.create(
+            user = cls.adv_user,
+            company = "nobitex",
+            brand = "nobi",
+            address = "Tehran bozorg",
+            category = "tech",
+            wallet_balance = 123456789,
+            is_active = True,
+            is_valid = True,
+            )
+        cls.publisher = Publisher.objects.create(
+            user = cls.pub_user,
+            website_app_name = "varzesh3",
+            content_category = "sport",
+            daily_traffic = 1540000,
+            average_site_speed = 15,
+            bank_card_number = "6037226514259865",
+            is_active = True,
+            is_valid = True,
+            )
+        now = timezone.now()
+        cls.campaign = Campaign.objects.create(
+            advertiser = cls.advertiser,
+            title = "yalda_night",
+            daily_budget = 2000,
+            total_budget = 5000,
+            start_date = now - timedelta(days=1),
+            end_date =  now + timedelta(days=5),
+            status = "active"
+            )
+        cls.campaign0 = Campaign.objects.create(
+            advertiser = cls.advertiser,
+            title = "yalda_night",
+            daily_budget = 2000,
+            total_budget = 5000,
+            start_date = now - timedelta(days=1),
+            end_date =  now + timedelta(days=5),
+            status = "active"
+            )
+
+
+        cls.adcamp = Ad.objects.create(
+            campaign = cls.campaign,
+            title = "yaldaaaa",
+            image = "",
+            destination_url = "https://www.azki.com/car-insurance/third-party-insurance",
+            cpc = 900,
+            is_active = True
+            )
+        cls.adcamp2 = Ad.objects.create(
+            campaign = cls.campaign,
+            title = "norooz",
+            image = "",
+            destination_url = "https://www.basalam.com/car-insurance/third-party-insurance",
+            cpc = 900,
+            is_active = True
+            )
+
+        cls.adcamp0 = Ad.objects.create(
+            campaign = cls.campaign0,
+            title = "norooz",
+            image = "",
+            destination_url = "https://www.basalam.com/car-insurance/third-party-insurance",
+            cpc = 900,
+            is_active = True
+            )
+
+        cls.impression1 = Impression.objects.create(
+            ad = cls.adcamp,
+            publisher = cls.publisher,
+            ip_address = '192.168.1.23',
+            user_agent = "saklhklj lkasjdfh kldsh iwero s lsd lasdh lksdh lierowier ",
+            )
+        cls.impression2 = Impression.objects.create(
+            ad = cls.adcamp,
+            publisher = cls.publisher,
+            ip_address = '192.168.1.23',
+            user_agent = "saklhklj lkasjdfh kldsh iwero s lsd lasdh lksdh lierowier ",
+            )
+        Impression.objects.filter(pk=cls.impression2.pk).update(
+            created_at=timezone.now() - timedelta(days=3)
+            )
+        cls.click1 = Click.objects.create(
+            ad = cls.adcamp,
+            publisher = cls.publisher,
+            impression = cls.impression1,
+            ip_address = '45.15.78.32',
+            user_agent = "slkdjf ;lswpoeowieasdl ncljds;lj aoweuwwesd;lkjdl;jdkfqwwpoeirsdjfl nc jl;a"
+
+            )
+        cls.click2 = Click.objects.create(
+            ad = cls.adcamp,
+            publisher = cls.publisher,
+            impression = cls.impression2,
+            ip_address = '45.15.78.32',
+            user_agent = "slkdjf ;lswpoeowieasdl ncljds;lj aoweuwwesd;lkjdl;jdkfqwwpoeirsdjfl nc jl;a"
+
+            )
+        Click.objects.filter(pk=cls.click2.pk).update(
+            created_at=timezone.now() - timedelta(days=3)
+            )        
+        cls.click3 = Click.objects.create(
+            ad = cls.adcamp0,
+            publisher = cls.publisher,
+            #impression = '',
+            ip_address = '45.15.78.32',
+            user_agent = "slkdjf ;lswpoeowieasdl ncljds;lj aoweuwwesd;lkjdl;jdkfqwwpoeirsdjfl nc jl;a"
+
+            )
+
+
+
+class ReportCampaignTests(BaseAdTechTest):
+    #def setUp(self):
+
+
+#################################################################
+            #ctr-test
+#################################################################
+    def test_calculate_ctr_with_valid_data(self):
+        ctr = calculate_ctr(
+        campaign=self.campaign
+    )
+
+        self.assertEqual(ctr, 100)
+#################################################################
+    def test_calculate_ctr_with_invalid_data(self):
+        ctr = calculate_ctr(
+        campaign=self.campaign0
+    )
+
+        self.assertEqual(ctr, None)
+
+#################################################################
+            #campaign-report-test
+#################################################################
+    def test_get_daily_report_with_valid_data(self):
+        now = timezone.now().date()
+        start_date = now #- timedelta(days=1)
+        end_date = now #- timedelta(days=1)
+
+        report = get_campaign_report(
+            campaign = self.campaign,
+            start_date = start_date,
+            end_date = end_date)
+        self.assertEqual(report['start_date'], start_date)
+        self.assertEqual(report['end_date'], end_date)
+        self.assertEqual(report['impressions'], 1)
+        self.assertEqual(report['clicks'], 1)
+        self.assertEqual(report['cost'], 900)
+        self.assertEqual(report['ctr'], 100)
+#################################################################
+    def test_get_multi_day_rangereport_with_valid_data(self):
+        now = timezone.now().date()
+        start_date = now - timedelta(days=4)
+        end_date = now + timedelta(days=5)
+
+        report = get_campaign_report(
+            campaign = self.campaign,
+            start_date = start_date,
+            end_date = end_date)
+        self.assertEqual(report['start_date'], start_date)
+        self.assertEqual(report['end_date'], end_date)
+        self.assertEqual(report['impressions'], 2)
+        self.assertEqual(report['clicks'], 2)
+        self.assertEqual(report['cost'], 1800)
+        self.assertEqual(report['ctr'], 100)    
+#################################################################
+    def test_get_multi_day_rangereport_with_out_data(self):
+        now = timezone.now().date()
+        start_date = now - timedelta(days=6)
+        end_date = now - timedelta(days=4)
+
+        report = get_campaign_report(
+            campaign = self.campaign,
+            start_date = start_date,
+            end_date = end_date)
+        self.assertEqual(report['start_date'], start_date)
+        self.assertEqual(report['end_date'], end_date)
+        self.assertEqual(report['impressions'], 0)
+        self.assertEqual(report['clicks'], 0)
+        self.assertEqual(report['cost'], 0)
+        self.assertEqual(report['ctr'], None)  
+
 

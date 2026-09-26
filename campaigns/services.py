@@ -104,8 +104,8 @@ def get_campaign_report(campaign, start_date, end_date):
 
 def get_top_campaigns(limit=10, order_by = 'clicks'):
     qs = Campaign.objects.annotate(
-    click_count=Count('ad__click'),
-    impression_count=Count('ad__impression'),
+    click_count=Count('ad__click', distinct=True),
+    impression_count=Count('ad__impression', distinct=True),
     ).annotate(
     ctr=Case(
         When(impression_count = 0, then=Value(0.0)),

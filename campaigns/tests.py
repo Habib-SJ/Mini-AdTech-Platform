@@ -338,7 +338,7 @@ class BaseAdTechTest(TestCase):
             )
         cls.campaign0 = Campaign.objects.create(
             advertiser = cls.advertiser,
-            title = "yalda_night",
+            title = "yalda_night0",
             daily_budget = 2000,
             total_budget = 5000,
             start_date = now - timedelta(days=1),
@@ -346,12 +346,20 @@ class BaseAdTechTest(TestCase):
             status = "active"
             )
 
-
+        cls.campaign2 = Campaign.objects.create(
+            advertiser=cls.advertiser,
+            title="campaign_no_activity",
+            daily_budget=2000,
+            total_budget=5000,
+            start_date=now - timedelta(days=1),
+            end_date=now + timedelta(days=5),
+            status="active"
+        )
         cls.adcamp = Ad.objects.create(
             campaign = cls.campaign,
             title = "yaldaaaa",
             image = "",
-            destination_url = "https://www.azki.com/car-insurance/third-party-insurance",
+            destination_url="https://www.azki.com/car-insurance/third-party-insurance",
             cpc = 900,
             is_active = True
             )
@@ -490,4 +498,23 @@ class ReportCampaignTests(BaseAdTechTest):
         self.assertEqual(report['cost'], 0)
         self.assertEqual(report['ctr'], None)  
 
+#################################################################
+            #top-campaigns
+#################################################################
+    def test_get_top_campaigns_order_by_clicks(self):
+        result = list(get_top_campaigns(limit=10, order_by='clicks'))
 
+        self.assertEqual(result[0], self.campaign)
+        self.assertEqual(result[0].click_count, 2)
+        self.assertEqual(result[0].impression_count, 2)
+#################################################################
+    def test_get_top_campaigns_order_by_ctr(self):
+        result = list(get_top_campaigns(limit=10, order_by='ctr'))
+
+        self.assertEqual(result[0], self.campaign)
+        self.assertEqual(result[-1], self.campaign2)
+#################################################################
+    def test_get_top_campaigns_respects_limit(self):
+        result = list(get_top_campaigns(limit=1, order_by='clicks'))
+
+        self.assertEqual(len(result), 1)

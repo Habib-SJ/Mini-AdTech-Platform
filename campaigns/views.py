@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from .models import Campaign
-from .services import calculate_ctr, get_campaign_report
+from .services import calculate_ctr, get_campaign_report, get_top_campaigns
 from datetime import datetime
 
 def campaign_ctr_view(request, campaign_id):
@@ -52,4 +52,34 @@ def campaign_report_view(request, campaign_id):
     
 
     return JsonResponse(report)
+
+
+def campaign_top_view(request):
+    limit = request.GET.get('limit', 10)
+    order_by = request.GET.get('order_by', 'clicks')
+
+    try:
+        limit = int(limit)
+    except Exception as e:
+        return JsonResponse({"error": "limit must be int"}, status=400)
+
+    if order_by not in ['clicks', 'ctr']:
+        return JsonResponse({"error":"order_by must either have the clicks value or ctr value"}, status=400)
+
+    top_campaigns = get_top_campaigns(limit=limit, order_by=order_by)
+
+
+    results = [
+        {
+            "id":c.id,
+            "title": c.title,
+            "click_count": c.click_count,
+            "impression_count": getattr(c, 'impression_count', 0),
+            "ctr": getattr(c, 'ctr', 0)
+        }
+        for c in top_campaigns
+
+    ]
+
+    return JsonResponse(results, safe=False)
 

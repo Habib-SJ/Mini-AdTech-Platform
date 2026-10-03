@@ -100,6 +100,24 @@ The goal is not only to build a working application, but also to document the en
 
 ---
 
+## Known Limitations & Production Considerations
+
+### Reporting and Data Aggregation
+
+Currently, campaign reports, including click counts, impression counts, CTR, and CPC consumption, are calculated directly from the underlying database tables using Django ORM queries and database aggregation functions.
+
+This approach is sufficient for the current scope of the project. However, at production scale, with millions of click and impression records per day, calculating reports directly from raw event tables for every request could lead to expensive database queries and increased response times.
+
+**Potential production improvement:**
+
+Replace on-demand aggregation over raw event tables with pre-aggregated daily statistics stored in dedicated daily aggregation tables. These tables could be updated asynchronously by a background task system such as Celery.
+
+This approach would reduce the need to repeatedly scan large event tables when generating reports. It would also help improve reporting performance as data volume grows.
+
+A production implementation would need to address aggregation accuracy, task retries, duplicate event processing, data consistency, and the handling of late-arriving events.
+
+---
+
 ## Project Status
 
 🚧 This project is currently under active development.

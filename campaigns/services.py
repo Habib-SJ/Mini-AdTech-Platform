@@ -4,7 +4,9 @@ from django.db import transaction
 from datetime import date
 
 from tracking.models import Click, Impression
-from campaigns.models import Campaign
+from campaigns.models import Campaign, Ad
+
+import random
 
 
 def get_daily_cpc_consumption(campaign):
@@ -31,6 +33,11 @@ class InsufficientDailyBudgetError(Exception): # finish dayily budget
   
 class InsufficientTotalBudgetError(Exception): # finish month budget
 	pass
+
+class NoEligibleAdError(Exception):
+    pass
+
+
 
 def close_campaign_if_exhausted(campaign):
     daily_used = get_daily_cpc_consumption(campaign)
@@ -122,6 +129,33 @@ def get_top_campaigns(limit=10, order_by = 'clicks'):
         qs = qs.order_by('-click_count')
 
     return qs[:limit]
+
+
+def select_random_ad():
+    now = timezone.now()
+    eligible_ids = list(
+        Ad.objects.filter(
+            is_active=True,
+            campaign__status='active',
+            campaign__start_date__lte=now,
+            campaign__end_date__gte=now,
+        ).values_list('id', flat=True)
+    )
+    if not eligible_ids:
+        raise NoEligibleAdError("No eligible active ad found.")
+    
+    selected_ad_id = random.choice(eligible_ids)
+    
+    selected_ad = (
+        Ad.objects.select_related('campaign').get(id=selected_ad_id)
+        )
+
+    return selected_ad
+        
+
+
+
+
 
 
 

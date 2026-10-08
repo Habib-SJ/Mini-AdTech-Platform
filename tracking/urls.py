@@ -5,6 +5,7 @@ from . import views
 app_name = 'tracking'
 
 urlpatterns = [
-       # path('tracking/click/<signed_token>/', views.tracking_ctr_view, name='campaign-ctr')
+    path('serve/<int:publisher_id>/', views.serve_ad_view, name='serve-ad'),
+    path('track/click/<str:token>/', views.click_redirect_view, name='click_redirect')
 
 ]

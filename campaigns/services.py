@@ -19,20 +19,25 @@ def get_total_cpc_consumption(campaign):
 	return res.get('total_cpc', 0) or 0
 	
 # custom exception
-class AdNotActiveError(Exception): #ad disabled
-	pass
+class AdNotActiveError(Exception):
+    def __init__(self, message="This ad is not active."):
+        super().__init__(message)
 
-class CampaignNotActiveError(Exception): #campaign status not active
-	pass
-   
-class CampaignOutOfDateRangeError(Exception): # date not range
-	pass
-   	
-class InsufficientDailyBudgetError(Exception): # finish dayily budget
-	pass
-  
-class InsufficientTotalBudgetError(Exception): # finish month budget
-	pass
+class CampaignNotActiveError(Exception):
+    def __init__(self, message="This campaign is not active."):
+        super().__init__(message)
+
+class CampaignOutOfDateRangeError(Exception):
+    def __init__(self, message="This campaign is outside its date range."):
+        super().__init__(message)
+
+class InsufficientDailyBudgetError(Exception):
+    def __init__(self, message="Daily budget exhausted for this campaign."):
+        super().__init__(message)
+
+class InsufficientTotalBudgetError(Exception):
+    def __init__(self, message="Total budget exhausted for this campaign."):
+        super().__init__(message)
 
 class NoEligibleAdError(Exception):
     pass

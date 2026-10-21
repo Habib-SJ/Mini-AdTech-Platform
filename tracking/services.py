@@ -24,7 +24,7 @@ def unsign_impression_id(signed_value, max_age_seconds=3600):
     try:
         original_value = signer.unsign(signed_value, max_age=max_age_seconds)
         return original_value
-    except BadSignature:
-        raise ClickTokenTamperedError
     except SignatureExpired:
         raise ClickTokenExpiredError
+    except BadSignature:
+        raise ClickTokenTamperedError

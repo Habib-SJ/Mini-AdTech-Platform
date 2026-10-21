@@ -19,7 +19,8 @@ from .services import sign_impression_id, unsign_impression_id, ClickTokenTamper
 
 def serve_ad_view(request, publisher_id):
     # Find the publisher with get_object_or_404
-    publisher = get_object_or_404(Publisher, pk=publisher_id)
+
+    publisher = get_object_or_404(Publisher.active_only, pk=publisher_id)
 
     # Choose a suitable and active Ad. For the MVP phase, the simplest selection logic: 
     #among all Ads with is_active=True and campaign status='active' and valid in the time frame, 
@@ -59,7 +60,7 @@ def click_redirect_view(request, token):
 
     impression = get_object_or_404(Impression, pk=impression_id)
     if Click.objects.filter(impression=impression).exists():
-    	return redirect(impression.ad.destination_url)
+        return redirect(impression.ad.destination_url)
 
     try:
         register_click(

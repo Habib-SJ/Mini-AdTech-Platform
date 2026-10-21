@@ -16,6 +16,8 @@ from campaigns.services import (
 )
 
 
+
+
 #################################################################
 User = get_user_model()
 
@@ -72,7 +74,7 @@ class RegisterClickTests(TestCase):
             campaign = self.campaign,
             title = "yaldaaaa",
             image = "",
-            destination_url = "https://www.azki.com/car-insurance/third-party-insurance",
+            destination_url = "https://join.basalam.com/influence-as/back-end-developer/",
             cpc = 900,
             is_active = True
             )
@@ -106,7 +108,7 @@ class RegisterClickTests(TestCase):
             campaign = self.campaign,
             title = "yaldaaaa",
             image = "",
-            destination_url = "https://www.azki.com/car-insurance/third-party-insurance",
+            destination_url = "https://join.basalam.com/influence-as/back-end-developer/",
             cpc = 10000,
             is_active = False
             )
@@ -135,7 +137,7 @@ class RegisterClickTests(TestCase):
             campaign = self.campaign1,
             title = "yaldaaaa",
             image = "",
-            destination_url = "https://www.azki.com/car-insurance/third-party-insurance",
+            destination_url = "https://join.basalam.com/influence-as/back-end-developer/",
             cpc = 10000,
             is_active = True
             )
@@ -164,7 +166,7 @@ class RegisterClickTests(TestCase):
             campaign = self.campaign2,
             title = "yaldaaaa",
             image = "",
-            destination_url = "https://www.azki.com/car-insurance/third-party-insurance",
+            destination_url = "https://join.basalam.com/influence-as/back-end-developer/",
             cpc = 10000,
             is_active = True
             )
@@ -219,7 +221,7 @@ class RegisterClickTests(TestCase):
             campaign = self.campaign3,
             title = "yaldaaaa",
             image = "",
-            destination_url = "https://www.azki.com/car-insurance/third-party-insurance",
+            destination_url = "https://join.basalam.com/influence-as/back-end-developer/",
             cpc = 24000,
             is_active = True
             )
@@ -359,7 +361,7 @@ class BaseAdTechTest(TestCase):
             campaign = cls.campaign,
             title = "yaldaaaa",
             image = "",
-            destination_url="https://www.azki.com/car-insurance/third-party-insurance",
+            destination_url="https://join.basalam.com/influence-as/back-end-developer/",
             cpc = 900,
             is_active = True
             )
@@ -367,7 +369,7 @@ class BaseAdTechTest(TestCase):
             campaign = cls.campaign,
             title = "norooz",
             image = "",
-            destination_url = "https://www.basalam.com/car-insurance/third-party-insurance",
+            destination_url = "https://join.basalam.com/influence-as/back-end-developer/",
             cpc = 900,
             is_active = True
             )
@@ -376,7 +378,7 @@ class BaseAdTechTest(TestCase):
             campaign = cls.campaign0,
             title = "norooz",
             image = "",
-            destination_url = "https://www.basalam.com/car-insurance/third-party-insurance",
+            destination_url = "https://join.basalam.com/influence-as/back-end-developer/",
             cpc = 900,
             is_active = True
             )

@@ -100,6 +100,11 @@ The goal is not only to build a working application, but also to document the en
 
 ---
 
+## 🛠 Design Decisions
+For a detailed explanation of the architectural choices, please refer to the [Design Decisions Document](./docs/design-decisions-en.md).
+
+---
+
 ## Project Status
 
 🚧 This project is currently under active development.

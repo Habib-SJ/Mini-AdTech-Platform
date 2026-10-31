@@ -2,7 +2,13 @@ from django.test import TestCase
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth import get_user_model
+from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
 
+from django.test import SimpleTestCase
+from tracking.services import (
+    sign_impression_id, unsign_impression_id,
+    ClickTokenExpiredError, ClickTokenTamperedError,
+)
 
 
 from .models import Click, Impression
@@ -53,6 +59,13 @@ class Report_AD_Redirect_View_Tests(BaseAdTechTest):
         response = self.client.get(f'/serve/{pID}/')
         #data = response.json()
         self.assertEqual(response.status_code, 404)  
+
+    def test_404_body_is_consistent(self):
+        Publisher.objects.update(is_valid=False)
+        blocked = self.client.get(f'/serve/{self.publisher.id}/')
+        missing = self.client.get('/serve/999999/')
+        self.assertEqual(blocked.status_code, missing.status_code)
+        self.assertEqual(blocked.content, missing.content)
 
     def test_serve_ad_view_invalid_Ads(self):
         Ad.objects.update(is_active=False)  
@@ -138,6 +151,22 @@ class Report_AD_Redirect_View_Tests(BaseAdTechTest):
         self.assertEqual(Click.objects.count(), initial_click_count)
         self.assertEqual(redirect_response.status_code, 400)
 
+#################################################
+#################################################
+class ImpressionTokenTests(SimpleTestCase):
+    def test_roundtrip_returns_original_id_as_string(self):
+        token = sign_impression_id(42)
+        self.assertEqual(unsign_impression_id(token), "42")
+
+    def test_expired_token_raises_expired_error(self):
+        token = sign_impression_id(42)
+        with self.assertRaises(ClickTokenExpiredError):
+            unsign_impression_id(token, max_age_seconds=-1)
+
+    def test_tampered_token_raises_tampered_error(self):
+        token = sign_impression_id(42)
+        with self.assertRaises(ClickTokenTamperedError):
+            unsign_impression_id(token + "x")
 
 
 

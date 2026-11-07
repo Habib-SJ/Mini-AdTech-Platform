@@ -31,24 +31,29 @@ class InvalidDateRangeError(ReportParameterError):
 def parse_date_range(request):
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
-    
+   # print(start_date_str, end_date_str)
+    #print('11')
     if not start_date_str or not end_date_str:
         raise EmptyOrMissingDateParameterError("start_date and end_date are required")
 
     #print('start and end 1',start_date_str, end_date_str)
+    #print('22')
     try:
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
     except ValueError:
         raise InvalidDateFormatError("dates must be in YYYY-MM-DD format")
-
+    #print('33')
     if start_date > end_date:
        raise InvalidDateRangeError("start_date must not be after end_date")
-
+    #print('44')
+    #print(start_date, end_date)
     return start_date, end_date
 
 def campaign_report_view(request, campaign_id):
     campaign = get_object_or_404(Campaign, pk=campaign_id)
+    #print('77', campaign)
+    #print('ct', campaign.start_date)
     try:
         start_date, end_date = parse_date_range(request)
     except ReportParameterError as e:

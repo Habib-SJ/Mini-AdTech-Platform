@@ -1,8 +1,8 @@
 from django.test import TestCase
-from django.utils import timezone
-from datetime import timedelta
+#from django.utils import timezone
+#from datetime import timedelta
 from django.contrib.auth import get_user_model
-from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
+#from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
 
 from django.test import SimpleTestCase
 from tracking.services import (
@@ -12,8 +12,8 @@ from tracking.services import (
 
 
 from .models import Click, Impression
-from .services import unsign_impression_id
-from .views import serve_ad_view, click_redirect_view
+
+#from .views import serve_ad_view#, click_redirect_view
 
 from campaigns.tests import BaseAdTechTest
 from campaigns.models import Ad, Campaign

@@ -520,3 +520,147 @@ class ReportCampaignTests(BaseAdTechTest):
         result = list(get_top_campaigns(limit=1, order_by='clicks'))
 
         self.assertEqual(len(result), 1)
+
+
+class CampaignReportApiTests(BaseAdTechTest):
+
+#################################################################
+            #ctr-test-drf
+#################################################################
+    def test_campaign_ctr_drf_success(self):
+
+        response = self.client.get(f'/campaigns/{self.campaign.id}/ctr/')
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        self.assertEqual(data['campaign_id'], self.campaign.id)
+        self.assertEqual(data['campaign_title'], self.campaign.title)
+        self.assertEqual(data['ctr'], 100.0)
+        self.assertIsInstance(data['ctr'], float)
+
+
+#################################################################
+    def test_campaign_ctr_drf_no_impression(self):
+        response = self.client.get(f'/campaigns/{self.campaign0.id}/ctr/')
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['ctr'], None) # 
+#################################################################
+    def test_campaign_ctr_not_found(self):
+        invalid_campaign_id = 99999
+        response = self.client.get(f'/campaigns/{invalid_campaign_id}/ctr/')
+        self.assertEqual(response.status_code, 404)
+        #self.assertEqual(response.get('Content-Type'), 'application/json')
+########################################################################
+            #report-test-drf
+########################################################################
+    def test_campaign_daily_report_success(self):
+        now = timezone.now().date()
+        start_date = now - timedelta(days=4)
+        end_date = now + timedelta(days=5)
+        #print('sd', start_date)
+
+        response = self.client.get(f'/campaigns/{self.campaign.id}/report/?start_date={start_date}&end_date={end_date}')
+        self.assertEqual(response.status_code, 200)
+        
+        data = response.json()
+        #print('data', data)
+        self.assertEqual(data['ctr'], 100.0)
+        self.assertIsInstance(data['ctr'], float)
+        self.assertEqual(data['cost'], 1800.0)
+        self.assertIsInstance(data['cost'], float)
+        self.assertEqual(data['clicks'], 2)
+        self.assertIsInstance(data['clicks'], int)
+        self.assertEqual(data['impressions'], 2)
+        self.assertIsInstance(data['impressions'], int)
+        
+        
+########################################################################
+    def test_campaign_daily_report_missing_params(self):
+        response = self.client.get(f'/campaigns/{self.campaign.id}/report/')
+        self.assertIsInstance(response.json(), dict)
+        self.assertEqual(response.status_code, 400) 
+#########################################################################
+    def test_campaign_daily_report_wrong_format(self): 
+        now = timezone.now().date() 
+        start_date = '11-02-2026' #- timedelta(days=1)
+        end_date = now    
+
+        response = self.client.get(f'/campaigns/{self.campaign.id}/report/?start_date={start_date}&end_date={end_date}')
+        self.assertIsInstance(response.json(), dict)
+        self.assertEqual(response.status_code, 400)
+#########################################################################
+    def test_campaign_daily_report_invalid_range(self):
+        start_date = "2026-12-31"
+        end_date = "2026-01-01"
+
+        response = self.client.get(f'/campaigns/{self.campaign.id}/report/?start_date={start_date}&end_date={end_date}')
+        self.assertIsInstance(response.json(), dict)
+        self.assertEqual(response.status_code, 400)
+#########################################################################
+    def test_campaign_single_day_report(self):
+        today = timezone.now().date()
+        response = self.client.get(
+            f'/campaigns/{self.campaign.id}/report/?start_date={today}&end_date={today}'
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['impressions'], 1)
+        self.assertIsInstance(data['impressions'], int)
+        self.assertEqual(data['clicks'], 1)
+        self.assertIsInstance(data['clicks'], int)
+        self.assertEqual(data['cost'], 900.0)
+        self.assertIsInstance(data['cost'], float)
+#########################################################################   
+    def test_campaign_daily_report_not_found(self):
+        invalid_campaign_id = 99999
+        now = timezone.now().date()
+        start_date = now #- timedelta(days=1)
+        end_date = now
+        response = self.client.get(f'/campaigns/{invalid_campaign_id}/report/?start_date={start_date}&end_date={end_date}')
+        self.assertEqual(response.status_code, 404)
+        #self.assertEqual(response.get('Content-Type'), 'application/json')
+
+########################################################################
+            #top-campaign-test-drf
+########################################################################
+    def test_top_campaigns_success(self):
+        response = self.client.get(f'/campaigns/top/')
+
+
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertIsInstance(data, list)
+        for item in data:
+            self.assertIsInstance(item['click_count'], int)#, f"Error in item ID {item['id']}: click_count is not int")
+            self.assertIsInstance(item['ctr'], float)#, f"Error in item ID {item['id']}: ctr is not float")
+        self.assertEqual(data[0]['id'], self.campaign.id)
+########################################################################
+    def test_top_campaigns_limit_and_order(self):
+        response = self.client.get(f'/campaigns/top/?limit=1&order_by=ctr')
+
+
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]['ctr'], 100.0)
+        self.assertIsInstance(data[0]['ctr'], float)
+
+########################################################################
+    def test_top_campaigns_invalid_params(self):     
+        response_limit = self.client.get(f'/campaigns/top/?limit=abc&order_by=ctr')
+
+        self.assertIsInstance(response_limit.json(), dict)
+        self.assertEqual(response_limit.status_code, 400)
+        #self.assertEqual(response_limit.json()['error'], "limit must be int")
+
+        response_order = self.client.get(f'/campaigns/top/?limit=5&order_by=cost')
+
+        self.assertIsInstance(response_order.json(), dict)
+        self.assertEqual(response_order.status_code, 400)
+        #self.assertIn("order_by must either", response_order.json()['error'])
+
+

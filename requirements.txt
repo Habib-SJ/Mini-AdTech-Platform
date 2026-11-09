@@ -1,6 +1,7 @@
 asgiref==3.11.1
 dj-database-url==3.0.1
 Django==4.2.30
+djangorestframework==3.16.1
 pillow==11.3.0
 psycopg2-binary==2.8.6
 python-decouple==3.8

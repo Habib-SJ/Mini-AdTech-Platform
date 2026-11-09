@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'accounts',
     'campaigns',
     'tracking',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [

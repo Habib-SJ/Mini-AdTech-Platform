@@ -10,6 +10,8 @@ To minimize complexity for the MVP, the system assumes a single dedicated domain
 
 Real-time reporting is performed directly from raw transaction tables, which poses scalability risks. To mitigate this, a future transition to asynchronous aggregation using Celery is planned.
 
+Timezone Alignment: Reporting aggregation follows the UTC day cycle (starting at 03:30 AM Tehran time).
+
 ## Concurrency Control in Budget Management
 
 Mechanism: To mitigate the risk of budget overruns during concurrent requests, select_for_update and atomic transactions are used to manage budget deductions.
@@ -79,6 +81,7 @@ Campaign model, budget consumption is calculated dynamically by aggregating the
   phase through a caching layer (e.g., Redis, if the environment allows) or a
   daily aggregation table.
 
+Note on Daily Cycle: The budget reset cycle is synchronized with the UTC midnight, which corresponds to 03:30 AM Tehran time.
 
 ## CTR Calculation: Zero vs. None (Ordering Logic)
 

@@ -550,7 +550,7 @@ class CampaignReportApiTests(BaseAdTechTest):
         invalid_campaign_id = 99999
         response = self.client.get(f'/campaigns/{invalid_campaign_id}/ctr/')
         self.assertEqual(response.status_code, 404)
-        #self.assertEqual(response.get('Content-Type'), 'application/json')
+        self.assertEqual(response.get('Content-Type'), 'application/json')
 ########################################################################
             #report-test-drf
 ########################################################################

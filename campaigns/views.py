@@ -1,7 +1,10 @@
 from django.shortcuts import render
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from .models import Campaign
+from .serializers import  CTRResponseSerializer
 from .services import (calculate_ctr, get_campaign_report, get_top_campaigns,select_random_ad, NoEligibleAdError,register_click, AdNotActiveError, CampaignNotActiveError,
     CampaignOutOfDateRangeError, InsufficientDailyBudgetError,
     InsufficientTotalBudgetError)
@@ -11,14 +14,20 @@ from tracking.models import Impression
 from tracking.utils import get_client_ip
 from tracking.services import sign_impression_id, unsign_impression_id, ClickTokenTamperedError, ClickTokenExpiredError
 
+@api_view(['GET'])
 def campaign_ctr_view(request, campaign_id):
     campaign = get_object_or_404(Campaign, pk=campaign_id)
     ctr = calculate_ctr(campaign)
-    return JsonResponse({
+    data = {
         "campaign_id": campaign.id,
         "campaign_title": campaign.title,
         "ctr": ctr
-    })
+    }
+    serializer = CTRResponseSerializer(data)
+
+    return Response(serializer.data)
+
+
 class ReportParameterError(Exception):
     pass
 class EmptyOrMissingDateParameterError(ReportParameterError): 

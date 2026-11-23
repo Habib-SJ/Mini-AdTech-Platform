@@ -619,7 +619,7 @@ class CampaignReportApiTests(BaseAdTechTest):
         end_date = now
         response = self.client.get(f'/campaigns/{invalid_campaign_id}/report/?start_date={start_date}&end_date={end_date}')
         self.assertEqual(response.status_code, 404)
-        #self.assertEqual(response.get('Content-Type'), 'application/json')
+        self.assertEqual(response.get('Content-Type'), 'application/json')
 
 ########################################################################
             #top-campaign-test-drf

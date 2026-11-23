@@ -83,6 +83,14 @@ Campaign model, budget consumption is calculated dynamically by aggregating the
 
 Note on Daily Cycle: The budget reset cycle is synchronized with the UTC midnight, which corresponds to 03:30 AM Tehran time.
 
+## Financial Data Precision & Representation
+
+**Data Type Discrepancy:** While calculations and database storage utilize the `Decimal` type to ensure precision and prevent floating-point errors, the API responses currently return monetary values as `float`. 
+
+**Current Status:** This representation is accepted for the current MVP stage and has passed initial validation tests.
+
+**Future Refinement:** To align with financial industry standards and avoid potential rounding issues in client-side applications, future iterations will migrate API responses to either formatted `strings` or integers representing the smallest currency unit (e.g., cents/rials).
+
 ## CTR Calculation: Zero vs. None (Ordering Logic)
 
 **Problem:** A discrepancy exists between returning `None` (when a single campaign has no data) and using `0` (during ranking/sorting operations).
